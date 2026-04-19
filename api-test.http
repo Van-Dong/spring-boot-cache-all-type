@@ -1,0 +1,131 @@
+### ============================================
+### PRODUCT API - Caffeine Cache Demo
+### ============================================
+
+### 1. GET Product by ID (Cache Miss → Cache Hit)
+### Lần 1: ~1000ms (query DB), Lần 2: <10ms (cache hit)
+GET http://localhost:8080/api/products/1
+Accept: application/json
+
+###
+
+### 2. GET Product 2
+GET http://localhost:8080/api/products/2
+Accept: application/json
+
+###
+
+### 3. GET Product 3
+GET http://localhost:8080/api/products/3
+Accept: application/json
+
+###
+
+### 4. GET Products by Category (Electronics)
+GET http://localhost:8080/api/products/category/Electronics
+Accept: application/json
+
+###
+
+### 5. GET Products by Category (Fashion)
+GET http://localhost:8080/api/products/category/Fashion
+Accept: application/json
+
+###
+
+### 6. UPDATE Product 1 (Cache Put)
+PUT http://localhost:8080/api/products/1
+Content-Type: application/json
+
+{
+  "name": "iPhone 15 Pro Max Updated",
+  "description": "Latest Apple flagship with updates",
+  "price": 1199.99,
+  "category": "Electronics"
+}
+
+###
+
+### 7. DELETE Product 1 (Cache Evict)
+DELETE http://localhost:8080/api/products/1
+
+###
+
+### 8. CLEAR ALL Product Cache
+DELETE http://localhost:8080/api/products/cache/clear
+
+###
+
+### ============================================
+### USER API - Redis Cache Demo
+### ============================================
+
+### 9. GET User by ID (Redis Cache Miss → Cache Hit)
+### Lần 1: ~800ms (query DB), Lần 2: <50ms (Redis cache hit)
+GET http://localhost:8080/api/users/1
+Accept: application/json
+
+###
+
+### 10. GET User 2
+GET http://localhost:8080/api/users/2
+Accept: application/json
+
+###
+
+### 11. GET User 3
+GET http://localhost:8080/api/users/3
+Accept: application/json
+
+###
+
+### 12. GET User by Username
+GET http://localhost:8080/api/users/username/john_doe
+Accept: application/json
+
+###
+
+### 13. GET User by Username (jane_smith)
+GET http://localhost:8080/api/users/username/jane_smith
+Accept: application/json
+
+###
+
+### 14. UPDATE User 1 (Redis Cache Put)
+PUT http://localhost:8080/api/users/1
+Content-Type: application/json
+
+{
+  "username": "john_doe_updated",
+  "email": "john.updated@example.com",
+  "fullName": "John Doe - Updated",
+  "role": "SUPER_ADMIN"
+}
+
+###
+
+### 15. DELETE User 1 (Redis Cache Evict)
+DELETE http://localhost:8080/api/users/1
+
+###
+
+### 16. CLEAR ALL User Redis Cache
+DELETE http://localhost:8080/api/users/cache/clear
+
+###
+
+### ============================================
+### Performance Test - Compare Cache Types
+### ============================================
+
+### 17. Test Caffeine Performance (Expected: <10ms after cache)
+### Run this multiple times to see cache hit performance
+GET http://localhost:8080/api/products/1
+
+###
+
+### 18. Test Redis Performance (Expected: ~20-50ms after cache)
+### Run this multiple times to see Redis cache hit performance
+GET http://localhost:8080/api/users/1
+
+###

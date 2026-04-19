@@ -1,0 +1,64 @@
+spring:
+  application:
+    name: demoalltypecache
+  data:
+    redis:
+      sentinel:
+        master: mymaster
+        nodes:
+          - localhost:26379
+          - localhost:26380
+          - localhost:26381
+      connect-timeout: 10000ms
+      timeout: 3000ms
+      lettuce:
+        pool:
+          enabled: true
+          max-active: 8
+          max-idle: 8
+          max-wait: -1ms
+          time-between-eviction-runs: 60s
+        read-from: replica-preferred
+
+app:
+  cache:
+    caffeine:
+      default:
+        maximum-size: 10000
+        ttl: 10m
+      caches:
+        USER_CACHE:
+          maximum-size: 1000
+          ttl: 30m
+        PRODUCT_CACHE:
+          maximum-size: 5000
+          ttl: 1h
+        ORDER_CACHE:
+          maximum-size: 2000
+          ttl: 10m
+        CONFIG_CACHE:
+          maximum-size: 500
+          ttl: 2h
+        SESSION_CACHE:
+          maximum-size: 1000
+          ttl: 1h
+        CATEGORY_CACHE:
+          maximum-size: 200
+          ttl: 3h
+        DICTIONARY_CACHE:
+          maximum-size: 100
+          ttl: 6h
+    redis:
+      default-ttl: 10m
+      key-prefix: 'myapp::'
+      caches:
+        users:
+          ttl: 5m
+        auth:
+          ttl: 2m
+        products:
+          ttl: 1h
+        orders:
+          ttl: 15m
+        configs:
+          ttl: 6h

@@ -1,6 +1,5 @@
 package com.dongnv.democache.service;
 
-import com.dongnv.democache.config.CacheNames;
 import com.dongnv.democache.model.Product;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,14 +32,14 @@ public class ProductService {
         database.put(5L, new Product(5L, "Levi's Jeans", "Classic blue jeans", new BigDecimal("59.99"), "Fashion"));
     }
 
-    @Cacheable(value = CacheNames.Caffeine.PRODUCT, key = "#productId", cacheManager = "caffeineCacheManager")
+    @Cacheable(value = "PRODUCT_CACHE", key = "#productId", cacheManager = "caffeineCacheManager")
     public Product getProductById(Long productId) {
         log.info("CACHE MISS - Fetching product {} from DATABASE (slow operation)", productId);
         simulateSlowQuery();
         return database.get(productId);
     }
 
-    @Cacheable(value = CacheNames.Caffeine.CATEGORY, key = "#category", cacheManager = "caffeineCacheManager")
+    @Cacheable(value = "CATEGORY_CACHE", key = "#category", cacheManager = "caffeineCacheManager")
     public List<Product> getProductsByCategory(String category) {
         log.info("CACHE MISS - Fetching products by category '{}' from DATABASE", category);
         simulateSlowQuery();
@@ -49,20 +48,20 @@ public class ProductService {
                 .toList();
     }
 
-    @CachePut(value = CacheNames.Caffeine.PRODUCT, key = "#product.id", cacheManager = "caffeineCacheManager")
+    @CachePut(value = "PRODUCT_CACHE", key = "#product.id", cacheManager = "caffeineCacheManager")
     public Product updateProduct(Product product) {
         log.info("UPDATE product {} and refresh cache", product.getId());
         database.put(product.getId(), product);
         return product;
     }
 
-    @CacheEvict(value = CacheNames.Caffeine.PRODUCT, key = "#productId", cacheManager = "caffeineCacheManager")
+    @CacheEvict(value = "PRODUCT_CACHE", key = "#productId", cacheManager = "caffeineCacheManager")
     public void deleteProduct(Long productId) {
         log.info("DELETE product {} and evict cache", productId);
         database.remove(productId);
     }
 
-    @CacheEvict(value = CacheNames.Caffeine.PRODUCT, allEntries = true, cacheManager = "caffeineCacheManager")
+    @CacheEvict(value = "PRODUCT_CACHE", allEntries = true, cacheManager = "caffeineCacheManager")
     public void clearAllProductCache() {
         log.info("CLEAR all product cache");
     }

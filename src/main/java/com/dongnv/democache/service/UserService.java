@@ -1,6 +1,5 @@
 package com.dongnv.democache.service;
 
-import com.dongnv.democache.config.CacheNames;
 import com.dongnv.democache.model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,14 +29,14 @@ public class UserService {
         database.put(4L, new User(4L, "alice_brown", "alice@example.com", "Alice Brown", "MODERATOR"));
     }
 
-    @Cacheable(value = CacheNames.Redis.USERS, key = "#userId", cacheManager = "redisCacheManager")
+    @Cacheable(value = "users", key = "#userId", cacheManager = "redisCacheManager")
     public User getUserById(Long userId) {
         log.info("REDIS CACHE MISS - Fetching user {} from DATABASE", userId);
         simulateSlowQuery();
         return database.get(userId);
     }
 
-    @Cacheable(value = CacheNames.Redis.USERS, key = "'username:' + #username", cacheManager = "redisCacheManager")
+    @Cacheable(value = "users", key = "'username:' + #username", cacheManager = "redisCacheManager")
     public User getUserByUsername(String username) {
         log.info("REDIS CACHE MISS - Fetching user by username '{}' from DATABASE", username);
         simulateSlowQuery();
@@ -47,20 +46,20 @@ public class UserService {
                 .orElse(null);
     }
 
-    @CachePut(value = CacheNames.Redis.USERS, key = "#user.id", cacheManager = "redisCacheManager")
+    @CachePut(value = "users", key = "#user.id", cacheManager = "redisCacheManager")
     public User updateUser(User user) {
         log.info("UPDATE user {} and refresh Redis cache", user.getId());
         database.put(user.getId(), user);
         return user;
     }
 
-    @CacheEvict(value = CacheNames.Redis.USERS, key = "#userId", cacheManager = "redisCacheManager")
+    @CacheEvict(value = "users", key = "#userId", cacheManager = "redisCacheManager")
     public void deleteUser(Long userId) {
         log.info("DELETE user {} and evict Redis cache", userId);
         database.remove(userId);
     }
 
-    @CacheEvict(value = CacheNames.Redis.USERS, allEntries = true, cacheManager = "redisCacheManager")
+    @CacheEvict(value = "users", allEntries = true, cacheManager = "redisCacheManager")
     public void clearAllUserCache() {
         log.info("CLEAR all user cache in Redis");
     }

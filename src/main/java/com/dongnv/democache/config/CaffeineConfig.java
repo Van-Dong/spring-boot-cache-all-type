@@ -1,4 +1,4 @@
-﻿package com.dongnv.democache.config;
+package com.dongnv.democache.config;
 
 import com.dongnv.democache.config.properties.CaffeineCacheProperties;
 import com.github.benmanes.caffeine.cache.Cache;
@@ -29,8 +29,6 @@ public class CaffeineConfig {
     @Bean
     @Primary
     public CaffeineCacheManager caffeineCacheManager() {
-        validateConfiguredCaches();
-
         CaffeineCacheManager caffeineCacheManager = new CaffeineCacheManager();
         // Không cache null để tránh giữ lại kết quả "không tìm thấy" quá lâu trong local cache.
         caffeineCacheManager.setAllowNullValues(false);
@@ -41,18 +39,6 @@ public class CaffeineConfig {
                 caffeineCacheManager.registerCustomCache(cacheName, buildCache(cacheName, cacheProperties)));
 
         return caffeineCacheManager;
-    }
-
-    /**
-     * Fail fast nếu YAML khai báo cache name lạ.
-     * Cách này tránh tình trạng annotation dùng 1 tên, config dùng 1 tên khác nhưng app vẫn start.
-     */
-    private void validateConfiguredCaches() {
-        caffeineCacheProperties.caches().keySet().forEach(cacheName -> {
-            if (!CacheNames.Caffeine.ALL.contains(cacheName)) {
-                throw new IllegalStateException("Unknown Caffeine cache name '" + cacheName + "'");
-            }
-        });
     }
 
     /**
@@ -80,11 +66,11 @@ public class CaffeineConfig {
      * removalListener chỉ để hỗ trợ debug khi cache bị evict do size hoặc hết hạn.
      */
     private Cache<Object, Object> buildCache(String cacheName, CaffeineCacheProperties.CacheProperties cacheProperties) {
-        CaffeineCacheProperties.CacheProperties required = requireCacheProperties(cacheName, cacheProperties);
-
         return Caffeine.newBuilder()
-                .maximumSize(required.maximumSize() != null ? required.maximumSize() : caffeineCacheProperties.defaultConfig().maximumSize())
-                .expireAfterWrite(required.ttl())
+                .maximumSize(cacheProperties.maximumSize() != null
+                        ? cacheProperties.maximumSize()
+                        : caffeineCacheProperties.defaultConfig().maximumSize())
+                .expireAfterWrite(cacheProperties.ttl())
                 .recordStats()
                 .removalListener((key, value, cause) -> {
                     if (cause == RemovalCause.SIZE || cause == RemovalCause.EXPIRED) {
@@ -92,22 +78,5 @@ public class CaffeineConfig {
                     }
                 })
                 .build();
-    }
-
-    /**
-     * Với per-cache policy, TTL là bắt buộc vì đây là business freshness rule của cache domain đó.
-     * maximumSize có thể fallback về default nếu domain không cần tune riêng.
-     */
-    private CaffeineCacheProperties.CacheProperties requireCacheProperties(
-            String cacheName,
-            CaffeineCacheProperties.CacheProperties cacheProperties
-    ) {
-        if (cacheProperties == null) {
-            throw new IllegalStateException("Missing configuration for cache '" + cacheName + "'");
-        }
-        if (cacheProperties.ttl() == null) {
-            throw new IllegalStateException("Missing ttl configuration for cache '" + cacheName + "'");
-        }
-        return cacheProperties;
     }
 }

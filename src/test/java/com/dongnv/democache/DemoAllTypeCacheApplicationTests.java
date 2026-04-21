@@ -1,6 +1,5 @@
 package com.dongnv.democache;
 
-import com.dongnv.democache.config.CacheNames;
 import com.dongnv.democache.config.properties.CaffeineCacheProperties;
 import com.dongnv.democache.config.properties.RedisCacheProperties;
 import org.junit.jupiter.api.Test;
@@ -40,8 +39,8 @@ class DemoAllTypeCacheApplicationTests {
 
     @Test
     void caffeineCachePoliciesComeFromApplicationYaml() {
-        CaffeineCache productCache = (CaffeineCache) caffeineCacheManager.getCache(CacheNames.Caffeine.PRODUCT);
-        CaffeineCache categoryCache = (CaffeineCache) caffeineCacheManager.getCache(CacheNames.Caffeine.CATEGORY);
+        CaffeineCache productCache = (CaffeineCache) caffeineCacheManager.getCache("PRODUCT_CACHE");
+        CaffeineCache categoryCache = (CaffeineCache) caffeineCacheManager.getCache("CATEGORY_CACHE");
         CaffeineCache fallbackCache = (CaffeineCache) caffeineCacheManager.getCache("UNCONFIGURED_CACHE");
 
         assertThat(productCache).isNotNull();
@@ -74,14 +73,14 @@ class DemoAllTypeCacheApplicationTests {
                 "getInitialCacheConfiguration"
         );
 
-        assertThat(initialConfigs).containsKeys(CacheNames.Redis.USERS, CacheNames.Redis.PRODUCTS);
-        assertThat(initialConfigs.get(CacheNames.Redis.USERS).getTtlFunction().getTimeToLive("k", "v"))
+        assertThat(initialConfigs).containsKeys("users", "products");
+        assertThat(initialConfigs.get("users").getTtlFunction().getTimeToLive("k", "v"))
                 .isEqualTo(Duration.ofMinutes(5));
-        assertThat(initialConfigs.get(CacheNames.Redis.PRODUCTS).getTtlFunction().getTimeToLive("k", "v"))
+        assertThat(initialConfigs.get("products").getTtlFunction().getTimeToLive("k", "v"))
                 .isEqualTo(Duration.ofHours(1));
-        assertThat(initialConfigs.get(CacheNames.Redis.USERS).getKeyPrefixFor(CacheNames.Redis.USERS))
+        assertThat(initialConfigs.get("users").getKeyPrefixFor("users"))
                 .isEqualTo("myapp::users::");
-        assertThat(initialConfigs.get(CacheNames.Redis.USERS).getAllowCacheNullValues())
+        assertThat(initialConfigs.get("users").getAllowCacheNullValues())
                 .isFalse();
         assertThat(defaultConfig.getTtlFunction().getTimeToLive("k", "v"))
                 .isEqualTo(redisCacheProperties.defaultTtl());

@@ -1,4 +1,4 @@
-﻿package com.dongnv.democache.config;
+package com.dongnv.democache.config;
 
 import com.dongnv.democache.config.properties.RedisCacheProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -62,8 +62,6 @@ public class RedisConfig {
      */
     @Bean
     public RedisCacheManager redisCacheManager(RedisConnectionFactory redisConnectionFactory) {
-        validateConfiguredCaches();
-
         RedisCacheConfiguration defaultConfig = RedisCacheConfiguration.defaultCacheConfig()
                 .entryTtl(redisCacheProperties.defaultTtl())
                 .computePrefixWith(cacheName -> redisCacheProperties.keyPrefix() + cacheName + "::")
@@ -75,7 +73,7 @@ public class RedisConfig {
         Map<String, RedisCacheConfiguration> cacheConfigs = redisCacheProperties.caches().entrySet().stream()
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
-                        entry -> defaultConfig.entryTtl(requireCacheProperties(entry.getKey(), entry.getValue()).ttl())
+                        entry -> defaultConfig.entryTtl(entry.getValue().ttl())
                 ));
 
         return RedisCacheManager.builder(redisConnectionFactory)
@@ -83,30 +81,6 @@ public class RedisConfig {
                 .withInitialCacheConfigurations(cacheConfigs)
                 .transactionAware()
                 .build();
-    }
-
-    /**
-     * Fail fast nếu config dùng cache name không nằm trong danh sách chuẩn của codebase.
-     */
-    private void validateConfiguredCaches() {
-        redisCacheProperties.caches().keySet().forEach(cacheName -> {
-            if (!CacheNames.Redis.ALL.contains(cacheName)) {
-                throw new IllegalStateException("Unknown Redis cache name '" + cacheName + "'");
-            }
-        });
-    }
-
-    /**
-     * Với Redis per-cache policy, TTL là phần business rule quan trọng nhất nên bắt buộc phải có.
-     */
-    private RedisCacheProperties.CacheProperties requireCacheProperties(
-            String cacheName,
-            RedisCacheProperties.CacheProperties cacheProperties
-    ) {
-        if (cacheProperties == null || cacheProperties.ttl() == null) {
-            throw new IllegalStateException("Missing ttl configuration for cache '" + cacheName + "'");
-        }
-        return cacheProperties;
     }
 
     /**

@@ -15,7 +15,6 @@ import java.util.Map;
 
 /**
  * Product Service - Demo Caffeine Cache
- * Cache policy for PRODUCT_CACHE is externalized in application.yaml.
  */
 @Service
 public class ProductService {

@@ -1,5 +1,6 @@
 package com.dongnv.democache.controller;
 
+import com.dongnv.democache.config.httpcache.HttpCache;
 import com.dongnv.democache.model.User;
 import com.dongnv.democache.service.UserService;
 import org.springframework.http.ResponseEntity;
@@ -29,9 +30,11 @@ public class UserController {
     }
 
     /**
-     * GET User by ID - Redis Cache
+     * GET User by ID - Redis Cache + HTTP Cache
      * Test: Call API 2 lần, lần 2 sẽ nhanh hơn (Redis cache hit)
+     * HTTP Cache: Private cache 5 minutes
      */
+    @HttpCache(cacheControl = "private, max-age=300", vary = {"Accept-Encoding"})
     @GetMapping("/{id}")
     public ResponseEntity<User> getUser(@PathVariable Long id) {
         long startTime = System.currentTimeMillis();
@@ -49,9 +52,7 @@ public class UserController {
                 .body(user);
     }
 
-    /**
-     * GET User by Username - Redis Cache
-     */
+    @HttpCache(cacheControl = "private, max-age=300", vary = {"Accept-Encoding"})
     @GetMapping("/username/{username}")
     public ResponseEntity<User> getUserByUsername(@PathVariable String username) {
         long startTime = System.currentTimeMillis();

@@ -1,5 +1,6 @@
 package com.dongnv.democache.controller;
 
+import com.dongnv.democache.config.httpcache.HttpCache;
 import com.dongnv.democache.model.Product;
 import com.dongnv.democache.service.ProductService;
 import org.springframework.http.ResponseEntity;
@@ -7,14 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-/**
- * Product API - Demo Caffeine Cache
- *
- * Test Scenarios:
- * 1. GET /api/products/1 -> lần 1: cache miss (chậm 1s), lần 2: cache hit (nhanh)
- * 2. PUT /api/products -> update cache
- * 3. DELETE /api/products/1 -> evict cache
- */
+/** Product API - Demo Caffeine Cache + simple HTTP cache headers. */
 @RestController
 @RequestMapping("/api/products")
 public class ProductController {
@@ -25,10 +19,8 @@ public class ProductController {
         this.productService = productService;
     }
 
-    /**
-     * GET Product by ID - Caffeine Cache
-     * Test: Call API 2 lần, lần 2 sẽ nhanh hơn (cache hit)
-     */
+    /** GET Product by ID - Caffeine Cache + Cache-Control header. */
+    @HttpCache(cacheControl = "private, max-age=1800")
     @GetMapping("/{id}")
     public ResponseEntity<Product> getProduct(@PathVariable Long id) {
         long startTime = System.currentTimeMillis();
@@ -39,16 +31,14 @@ public class ProductController {
             return ResponseEntity.notFound().build();
         }
 
-        // Response header để debug cache performance.
         return ResponseEntity.ok()
                 .header("X-Response-Time", duration + "ms")
                 .header("X-Cache-Type", "Caffeine")
                 .body(product);
     }
 
-    /**
-     * GET Products by Category - Category Cache
-     */
+    /** GET products by category - Cache-Control + Vary headers. */
+    @HttpCache(cacheControl = "private, max-age=300", vary = {"Accept-Encoding"})
     @GetMapping("/category/{category}")
     public ResponseEntity<List<Product>> getProductsByCategory(@PathVariable String category) {
         long startTime = System.currentTimeMillis();
